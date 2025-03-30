@@ -4,7 +4,105 @@
 
 using namespace std;
 
-// git
+string read_input() {
+    string input;
+    getline(cin, input);
+    input.erase(0,input.find_first_not_of(' '));
+    input.erase(input.find_last_not_of(' ')+1,string::npos);
+    return input;
+}
+
+string prompt_input(string prompt) {
+    cout << prompt;
+    string input = read_input();
+    if (input == "cancel") {
+        throw "cancel";
+    }
+    return input;
+}
+
+void get_muscle_input(Data &database) {
+    try {
+        string name = prompt_input("name: ");
+
+        const char* upper;
+        char upper_char = prompt_input("upper body (y/n): ")[0];
+        switch(upper_char) {
+            case('y'):
+                upper = "TRUE";
+                break;
+            case('n'):
+                upper = "FALSE";
+                break;
+            default:
+                throw;
+        }
+
+        string group = prompt_input("muscle group: ");
+
+        if (database.add_muscle(name, upper, group)) {
+            cout << "Added muscle succesfully." << endl;
+        }
+        else {
+            cout << "Adding muscle failed." << endl;
+            cout << database.output << endl;
+        }
+    }
+    catch(...) {
+        return;
+    }
+}
+
+void get_exercise_input(Data &database) {
+    try {
+        string name = prompt_input("name: ");
+
+        const char* compound;
+        char compound_char = prompt_input("compound exercise (y/n): ")[0];
+        switch(compound_char) {
+            case('y'):
+                compound = "TRUE";
+                break;
+            case('n'):
+                compound = "FALSE";
+                break;
+            default:
+                throw;
+        }
+
+        vector<string> primary;
+        string muscle;
+        cout << "primary muscles (type 'done' to finish)" << endl;
+        while (true) {
+            muscle = prompt_input(">");
+            if (muscle == "done") {
+                break;
+            }
+            primary.push_back(muscle);
+        }
+        vector<string> secondary;
+        muscle = "";
+        cout << "secondary muscles (type 'done' to finish)" << endl;
+        while (true) {
+            muscle = prompt_input(">");
+            if (muscle == "done") {
+                break;
+            }
+            secondary.push_back(muscle);
+        }
+
+        if (database.add_exercise(name, compound, primary, secondary)) {
+            cout << "Added exercise succesfully." << endl;
+        }
+        else {
+            cout << "Adding exercise failed." << endl;
+            cout << database.output << endl;
+        }
+    }
+    catch(...) {
+        return;
+    }
+}
 
 int main() {
     try {
@@ -18,102 +116,19 @@ int main() {
             cin >> input_type;
 
             if (input_type == "exercise") {
-                getline(cin, current_exercise);
+                current_exercise = read_input();
                 if (!database.select_exercise(current_exercise)) {
                     current_exercise = "";
                 }
-                cout << endl;
                 cout << database.output << endl;
             }
             else if (input_type == "add") {
-                string add_type;
-                cin >> add_type;
+                string add_type = read_input();
                 if (add_type == "muscle") {
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                    string name;
-                    cout << "name: ";
-                    getline(cin, name);
-
-                    const char* upper;
-                    cout << "upper body (y/n): ";
-                    char upper_char;
-                    cin >> upper_char;
-                    switch(upper_char) {
-                        case('y'):
-                            upper = "TRUE";
-                            break;
-                        case('n'):
-                            upper = "FALSE";
-                            break;
-                        default:
-                            continue;
-                    }
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-                    string group;
-                    cout << "muscle group: ";
-                    getline(cin, group);
-
-                    if (database.add_muscle(name, upper, group)) {
-                        cout << "Added muscle succesfully." << endl;
-                    }
-                    else {
-                        cout << "Adding muscle failed." << endl;
-                        cout << database.output << endl;
-                    }
+                    get_muscle_input(database);
                 }
                 else if (add_type == "exercise") {
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                    string name;
-                    cout << "name: ";
-                    getline(cin, name);
-
-                    const char* compound;
-                    cout << "compound exercise (y/n): ";
-                    char compound_char;
-                    cin >> compound_char;
-                    switch(compound_char) {
-                        case('y'):
-                            compound = "TRUE";
-                            break;
-                        case('n'):
-                            compound = "FALSE";
-                            break;
-                        default:
-                            continue;
-                    }
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-                    vector<string> primary;
-                    string muscle;
-                    cout << "primary muscles (type 'done' to finish)" << endl;
-                    while (true) {
-                        cout << ">";
-                        getline(cin, muscle);
-                        if (muscle == "done") {
-                            break;
-                        }
-                        primary.push_back(muscle);
-                    }
-                    vector<string> secondary;
-                    muscle = "";
-                    cout << "secondary muscles (type 'done' to finish)" << endl;
-                    while (true) {
-                        cout << ">";
-                        getline(cin, muscle);
-                        if (muscle == "done") {
-                            break;
-                        }
-                        secondary.push_back(muscle);
-                    }
-
-                    if (database.add_exercise(name, compound, primary, secondary)) {
-                        cout << "Added exercise succesfully." << endl;
-                    }
-                    else {
-                        cout << "Adding exercise failed." << endl;
-                        cout << database.output << endl;
-                    }
+                    get_exercise_input(database);
                 }
                 else {
                     cout << "Add needs to be followed by 'muscle' or 'exercise'." << endl;
@@ -122,9 +137,13 @@ int main() {
             else if (input_type == "quit") {
                 break;
             }
+            else {
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Unknown command." << endl;
+            }
         }
     }
-    catch(std::string err_msg) {
+    catch(string err_msg) {
         cerr << format("Opening database failed: {}", err_msg) << endl;
         return 1;
     }
