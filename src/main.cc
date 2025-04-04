@@ -8,6 +8,7 @@ string read_input() {
     string input;
     getline(cin, input);
     input.erase(0,input.find_first_not_of(' '));
+    // will never throw even with no non-space chars as string::npos+1 overflows to 0
     input.erase(input.find_last_not_of(' ')+1,string::npos);
     return input;
 }
@@ -120,6 +121,14 @@ int main() {
                 if (!database.select_exercise(current_exercise)) {
                     current_exercise = "";
                 }
+                cout << database.output << endl;
+            }
+            else if (input_type == "exercises") {
+                database.show_exercises();
+                cout << database.output << endl;
+            }
+            else if (input_type == "muscles") {
+                database.show_muscles();
                 cout << database.output << endl;
             }
             else if (input_type == "add") {

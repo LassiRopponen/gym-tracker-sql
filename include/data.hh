@@ -10,6 +10,8 @@ class Data {
         Data(string name);
         ~Data();
         bool select_exercise(string name);
+        void show_exercises();
+        void show_muscles();
         bool add_exercise(
             string name, const char* compound, vector<string> primary, vector<string> secondary);
         bool add_muscle(string name, const char* upper, string group);

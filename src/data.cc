@@ -40,6 +40,16 @@ bool Data::select_exercise(string name) {
     return true;
 }
 
+void Data::show_exercises() {
+    const char* query = "SELECT * FROM exercise;";
+    send_query(query, list_callback);
+}
+
+void Data::show_muscles() {
+    const char* query = "SELECT * FROM muscle;";
+    send_query(query, list_callback);
+}
+
 bool Data::add_exercise(
         string name, const char* compound, vector<string> primary, vector<string> secondary
     ) {
