@@ -108,18 +108,25 @@ void get_exercise_input(Data &database) {
 int main() {
     try {
         Data database = Data("test.db");
-        string current_exercise = "";
+        string current_item = "";
         string input;
 
         while (true) {
-            cout << format("{}>", current_exercise);
+            cout << format("{}>", current_item);
             string input_type;
             cin >> input_type;
 
             if (input_type == "exercise") {
-                current_exercise = read_input();
-                if (!database.select_exercise(current_exercise)) {
-                    current_exercise = "";
+                current_item = read_input();
+                if (!database.select_exercise(current_item)) {
+                    current_item = "";
+                }
+                cout << database.output << endl;
+            }
+            else if (input_type == "muscle") {
+                current_item = read_input();
+                if (!database.select_muscle(current_item)) {
+                    current_item = "";
                 }
                 cout << database.output << endl;
             }

@@ -10,6 +10,7 @@ class Data {
         Data(string name);
         ~Data();
         bool select_exercise(string name);
+        bool select_muscle(string name);
         void show_exercises();
         void show_muscles();
         bool add_exercise(

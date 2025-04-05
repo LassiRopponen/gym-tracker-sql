@@ -40,6 +40,18 @@ bool Data::select_exercise(string name) {
     return true;
 }
 
+bool Data::select_muscle(string name) {
+    string query = format("SELECT * FROM muscle WHERE name='{}';", name);
+    if (send_query(query.c_str(), single_callback) != SQLITE_OK) {
+        return false;
+    }
+    if (output == "") {
+        output = format("No muscle with name {}", name);
+        return false;
+    }
+    return true;
+}
+
 void Data::show_exercises() {
     const char* query = "SELECT * FROM exercise;";
     send_query(query, list_callback);
@@ -124,7 +136,7 @@ int Data::list_callback(void* ptr, int argc, char** argv, char** azColName)
         std::string col = azColName[i];
         col += ": ";
         col += argv[i] ? argv[i] : "NULL";
-        col += " ";
+        col += "; ";
         output->append(col);
     }
     output->append("\n");
