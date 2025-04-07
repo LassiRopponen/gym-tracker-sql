@@ -20,7 +20,13 @@ Data::Data(string name) {
                             "exercise_id INTEGER NOT NULL," \
                             "muscle_id INTEGER NOT NULL," \
                             "main BOOLEAN NOT NULL," \
-                            "PRIMARY KEY (exercise_id, muscle_id));";
+                            "PRIMARY KEY (exercise_id, muscle_id));" \
+                        "CREATE TABLE IF NOT EXISTS set(" \
+                            "id INTEGER PRIMARY KEY NOT NULL," \
+                            "weight FLOAT," \
+                            "reps INTEGER NOT NULL," \
+                            "date varchar(9) DEFAULT date('now', 'localtime');";                 
+
     send_query(query, NULL);
 }
 
@@ -135,7 +141,7 @@ int Data::list_callback(void* ptr, int argc, char** argv, char** azColName)
     for (int i = 0; i < argc; i++) {
         std::string col = azColName[i];
         col += ": ";
-        col += argv[i] ? argv[i] : "NULL";
+        col += argv[i] ? argv[i] : "0";
         col += "; ";
         output->append(col);
     }
@@ -149,7 +155,7 @@ int Data::single_callback(void* ptr, int argc, char** argv, char** azColName)
     for (int i = 0; i < argc; i++) {
         std::string col = azColName[i];
         col += ": ";
-        col += argv[i] ? argv[i] : "NULL";
+        col += argv[i] ? argv[i] : "0";
         col += "\n";
         output->append(col);
     }

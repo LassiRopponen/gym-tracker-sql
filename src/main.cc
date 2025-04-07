@@ -121,22 +121,22 @@ int main() {
                 if (!database.select_exercise(current_item)) {
                     current_item = "";
                 }
-                cout << database.output << endl;
+                cout << database.output;
             }
             else if (input_type == "muscle") {
                 current_item = read_input();
                 if (!database.select_muscle(current_item)) {
                     current_item = "";
                 }
-                cout << database.output << endl;
+                cout << database.output;
             }
             else if (input_type == "exercises") {
                 database.show_exercises();
-                cout << database.output << endl;
+                cout << database.output;
             }
             else if (input_type == "muscles") {
                 database.show_muscles();
-                cout << database.output << endl;
+                cout << database.output;
             }
             else if (input_type == "add") {
                 string add_type = read_input();
