@@ -18,12 +18,12 @@ class Data {
         ~Data();
         bool select_exercise(string name);
         bool select_muscle(string name);
-        void show_exercises();
+        void show_exercises(State current);
         void show_muscles(State current);
         bool add_exercise(
             string name, const char* compound, vector<string> primary, vector<string> secondary);
         bool add_muscle(string name, const char* upper, string group);
-        bool add_set(string exercise, float weight, int reps, const char* date);
+        bool add_set(string exercise, string weight, string reps, string date);
 
         string output = "";
     private:
@@ -32,6 +32,7 @@ class Data {
         static int single_callback(void* ptr, int argc, char** argv, char** azColName);
         static int id_callback(void* ptr, int argc, char** argv, char** azColName);
         bool find_muscle_ids(const vector<string> &muscles, vector<string> &ids);
+        bool convert_date_input(const string &date_input, string &date);
 
         sqlite3* db;
 };

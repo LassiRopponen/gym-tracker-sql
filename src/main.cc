@@ -139,7 +139,7 @@ int main() {
                 cout << database.output;
             }
             else if (input_type == "exercises") {
-                database.show_exercises();
+                database.show_exercises(current);
                 cout << database.output;
             }
             else if (input_type == "muscles") {

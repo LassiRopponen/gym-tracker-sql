@@ -61,20 +61,22 @@ bool Data::select_muscle(string name) {
     return true;
 }
 
-void Data::show_exercises() {
+void Data::show_exercises(State current) {
     const char* query = "SELECT name, compound FROM exercise;";
+    if (current == muscle) {
+        query = "SELECT e.name, e.compound, t.main FROM exercise e " \
+                    "INNER JOIN trains t ON e.id = t.exercise_id " \
+                    "INNER JOIN muscle m ON t.muscle_id = m.id;";
+    }
     send_query(query, list_callback);
 }
 
 void Data::show_muscles(State current) {
-    const char* query;
+    const char* query = "SELECT name, upper, muscle_group FROM muscle;";
     if (current == exercise) {
         query = "SELECT m.name, m.upper, m.muscle_group, t.main FROM muscle m " \
-                                "INNER JOIN trains t ON m.id = t.muscle_id " \
-                                "INNER JOIN exercise e ON t.exercise_id = e.id;";
-    }
-    else {
-        query = "SELECT name, upper, muscle_group FROM muscle;";
+                    "INNER JOIN trains t ON m.id = t.muscle_id " \
+                    "INNER JOIN exercise e ON t.exercise_id = e.id;";
     }
     send_query(query, list_callback);
 }
@@ -135,6 +137,40 @@ bool Data::add_muscle(string name, const char* upper, string group) {
     return true;
 }
 
+bool Data::add_set(string exercise, string weight_input, string reps_input, string date_input) {
+    string exercise_query = format("SELECT id FROM exercise WHERE name='{}';", exercise);
+    if (send_query(exercise_query.c_str(), id_callback) != SQLITE_OK) {
+        return false;
+    }
+    if (output == "") {
+        output = format("No exercise with name {}.", exercise);
+        return false;
+    }
+    float weight;
+    try {
+        weight = stod(weight_input);
+        if (weight < 0) {
+            throw;
+        }
+    }
+    catch (...) {
+        output = "Weight must be a positive decimal number.";
+        return false;
+    }
+    int reps;
+    try {
+        reps = stoi(reps_input);
+        if (reps < 0) {
+            throw;
+        }
+    }
+    catch (...) {
+        output = "Reps must be a natural number.";
+        return false;
+    }
+    // todo
+}
+
 int Data::send_query(const char* query, int (*callback)(void*, int, char**, char**)) {
     output = "";
     char* err_msg;
@@ -148,9 +184,9 @@ int Data::send_query(const char* query, int (*callback)(void*, int, char**, char
 
 int Data::list_callback(void* ptr, int argc, char** argv, char** azColName)
 {
-    std::string* output = static_cast<std::string*>(ptr);
+    string* output = static_cast<string*>(ptr);
     for (int i = 0; i < argc; i++) {
-        std::string col = azColName[i];
+        string col = azColName[i];
         col += ": ";
         col += argv[i] ? argv[i] : "NULL";
         col += "; ";
@@ -162,9 +198,9 @@ int Data::list_callback(void* ptr, int argc, char** argv, char** azColName)
 
 int Data::single_callback(void* ptr, int argc, char** argv, char** azColName)
 {
-    std::string* output = static_cast<std::string*>(ptr);
+    string* output = static_cast<string*>(ptr);
     for (int i = 0; i < argc; i++) {
-        std::string col = azColName[i];
+        string col = azColName[i];
         col += ": ";
         col += argv[i] ? argv[i] : "NULL";
         col += "\n";
@@ -175,7 +211,7 @@ int Data::single_callback(void* ptr, int argc, char** argv, char** azColName)
 
 int Data::id_callback(void* ptr, int argc, char** argv, char** azColName)
 {
-    std::string* output = static_cast<std::string*>(ptr);
+    string* output = static_cast<string*>(ptr);
     if (argc > 0) {
         output->append(argv[0]);
     }
@@ -195,4 +231,8 @@ bool Data::find_muscle_ids(const vector<string> &muscles, vector<string> &ids) {
         ids.push_back(output);
     }
     return true;
+}
+
+bool Data::convert_date_input(const string &date_input, string &date) {
+    
 }
