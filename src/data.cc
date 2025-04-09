@@ -7,7 +7,8 @@ Data::Data(string name) {
         throw sqlite3_errmsg(db);
     }
 
-    const char* query = "CREATE TABLE IF NOT EXISTS exercise(" \
+    const char* query = "PRAGMA foreign_keys = ON;"  \
+                        "CREATE TABLE IF NOT EXISTS exercise(" \
                             "id INTEGER PRIMARY KEY NOT NULL," \
                             "name VARCHAR(100) UNIQUE NOT NULL," \
                             "compound BOOLEAN NOT NULL);" \
@@ -23,9 +24,11 @@ Data::Data(string name) {
                             "PRIMARY KEY (exercise_id, muscle_id));" \
                         "CREATE TABLE IF NOT EXISTS set(" \
                             "id INTEGER PRIMARY KEY NOT NULL," \
-                            "weight FLOAT," \
+                            "weight FLOAT NOT NULL," \
                             "reps INTEGER NOT NULL," \
-                            "date varchar(9) DEFAULT date('now', 'localtime');";                 
+                            "date varchar(9) DEFAULT date('now', 'localtime');" \
+                            "exercise_id INTEGER NOT NULL" \
+                            "FOREIGN KEY (exercise_id) REFERENCES exercise (id)";            
 
     send_query(query, NULL);
 }
@@ -35,7 +38,7 @@ Data::~Data() {
 }
 
 bool Data::select_exercise(string name) {
-    string query = format("SELECT * FROM exercise WHERE name='{}';", name);
+    string query = format("SELECT name, compound FROM exercise WHERE name='{}';", name);
     if (send_query(query.c_str(), single_callback) != SQLITE_OK) {
         return false;
     }
@@ -47,7 +50,7 @@ bool Data::select_exercise(string name) {
 }
 
 bool Data::select_muscle(string name) {
-    string query = format("SELECT * FROM muscle WHERE name='{}';", name);
+    string query = format("SELECT name, upper, muscle_group FROM muscle WHERE name='{}';", name);
     if (send_query(query.c_str(), single_callback) != SQLITE_OK) {
         return false;
     }
@@ -59,12 +62,20 @@ bool Data::select_muscle(string name) {
 }
 
 void Data::show_exercises() {
-    const char* query = "SELECT * FROM exercise;";
+    const char* query = "SELECT name, compound FROM exercise;";
     send_query(query, list_callback);
 }
 
-void Data::show_muscles() {
-    const char* query = "SELECT * FROM muscle;";
+void Data::show_muscles(State current) {
+    const char* query;
+    if (current == exercise) {
+        query = "SELECT m.name, m.upper, m.muscle_group, t.main FROM muscle m " \
+                                "INNER JOIN trains t ON m.id = t.muscle_id " \
+                                "INNER JOIN exercise e ON t.exercise_id = e.id;";
+    }
+    else {
+        query = "SELECT name, upper, muscle_group FROM muscle;";
+    }
     send_query(query, list_callback);
 }
 
@@ -141,7 +152,7 @@ int Data::list_callback(void* ptr, int argc, char** argv, char** azColName)
     for (int i = 0; i < argc; i++) {
         std::string col = azColName[i];
         col += ": ";
-        col += argv[i] ? argv[i] : "0";
+        col += argv[i] ? argv[i] : "NULL";
         col += "; ";
         output->append(col);
     }
@@ -155,7 +166,7 @@ int Data::single_callback(void* ptr, int argc, char** argv, char** azColName)
     for (int i = 0; i < argc; i++) {
         std::string col = azColName[i];
         col += ": ";
-        col += argv[i] ? argv[i] : "0";
+        col += argv[i] ? argv[i] : "NULL";
         col += "\n";
         output->append(col);
     }

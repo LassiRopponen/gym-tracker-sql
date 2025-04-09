@@ -1,9 +1,16 @@
-#include "sqlite3.h"
 #include <string>
 #include <vector>
 #include <format>
 
+#include "sqlite3.h"
+
 using namespace std;
+
+enum State {
+    nothing,
+    exercise,
+    muscle
+};
 
 class Data {
     public:
@@ -12,10 +19,11 @@ class Data {
         bool select_exercise(string name);
         bool select_muscle(string name);
         void show_exercises();
-        void show_muscles();
+        void show_muscles(State current);
         bool add_exercise(
             string name, const char* compound, vector<string> primary, vector<string> secondary);
         bool add_muscle(string name, const char* upper, string group);
+        bool add_set(string exercise, float weight, int reps, const char* date);
 
         string output = "";
     private:
