@@ -234,5 +234,15 @@ bool Data::find_muscle_ids(const vector<string> &muscles, vector<string> &ids) {
 }
 
 bool Data::convert_date_input(const string &date_input, string &date) {
-    
+    try {
+        // try to validate with sqlite
+        size_t first_period = date_input.find_first_of('.');
+        int day = stoi(date_input.substr(0, first_period));
+        size_t second_period = date_input.substr(first_period+1,string::npos).find_first_of('.');
+        int month = stoi(date_input.substr(first_period+1, second_period));
+        int year = stoi(date_input.substr(second_period+1, string::npos));
+    }
+    catch (...) {
+        return false;
+    }
 }
