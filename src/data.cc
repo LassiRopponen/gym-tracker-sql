@@ -146,9 +146,10 @@ bool Data::add_set(string exercise, string weight_input, string reps_input, stri
         output = format("No exercise with name {}.", exercise);
         return false;
     }
+    string exercise_id = output;
     float weight;
     try {
-        weight = stod(weight_input);
+        weight = stof(weight_input);
         if (weight < 0) {
             throw;
         }
@@ -168,7 +169,17 @@ bool Data::add_set(string exercise, string weight_input, string reps_input, stri
         output = "Reps must be a natural number.";
         return false;
     }
-    // todo
+    string date;
+    if (!convert_date_input(date_input, date)) {
+        return false;
+    }
+    string query = 
+        format("INSERT INTO set(weight, reps, date, exercise_id) VALUES({:.2f},{},'{}',{});",
+        weight, reps, date, exercise_id);
+    if (send_query(query.c_str(), NULL) != SQLITE_OK) {
+        return false;
+    }
+    return true;
 }
 
 int Data::send_query(const char* query, int (*callback)(void*, int, char**, char**)) {
@@ -213,7 +224,7 @@ int Data::id_callback(void* ptr, int argc, char** argv, char** azColName)
 {
     string* output = static_cast<string*>(ptr);
     if (argc > 0) {
-        output->append(argv[0]);
+        output->append(argv[0] ? argv[0] : "NULL");
     }
     return 0;
 }
@@ -234,15 +245,27 @@ bool Data::find_muscle_ids(const vector<string> &muscles, vector<string> &ids) {
 }
 
 bool Data::convert_date_input(const string &date_input, string &date) {
-    try {
-        // try to validate with sqlite
-        size_t first_period = date_input.find_first_of('.');
-        int day = stoi(date_input.substr(0, first_period));
-        size_t second_period = date_input.substr(first_period+1,string::npos).find_first_of('.');
-        int month = stoi(date_input.substr(first_period+1, second_period));
-        int year = stoi(date_input.substr(second_period+1, string::npos));
+    size_t first_period = date_input.find_first_of('.');
+    size_t second_period = date_input.substr(first_period+1,string::npos).find_first_of('.');
+    string day = date_input.substr(0, first_period);
+    string month = date_input.substr(first_period+1, second_period);
+    string year = date_input.substr(second_period+1, string::npos);
+    if (day.size() < 2) {
+        day.insert(0, "0");
     }
-    catch (...) {
+    if (month.size() < 2) {
+        month.insert(0, "0");
+    }
+    while (year.size() < 4) {
+        year.insert(0, "0");
+    }
+    date = year + "-" + month + "-" + day;
+    if (send_query(format("SELECT date('{}');", date).c_str(), id_callback) != SQLITE_OK) {
         return false;
     }
+    if (output == "NULL") {
+        output = "Incorrect date.";
+        return false;
+    }
+    return true;
 }
