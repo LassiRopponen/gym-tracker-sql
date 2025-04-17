@@ -16,20 +16,20 @@ Data::Data(string name) {
                             "id INTEGER PRIMARY KEY NOT NULL," \
                             "name VARCHAR(100) UNIQUE NOT NULL," \
                             "upper BOOLEAN NOT NULL," \
-                            "muscle_group VARCHAR(50));"
+                            "muscle_group VARCHAR(50));" \
                         "CREATE TABLE IF NOT EXISTS trains(" \
                             "exercise_id INTEGER NOT NULL," \
                             "muscle_id INTEGER NOT NULL," \
                             "main BOOLEAN NOT NULL," \
                             "PRIMARY KEY (exercise_id, muscle_id));" \
-                        "CREATE TABLE IF NOT EXISTS set(" \
+                        "CREATE TABLE IF NOT EXISTS working_set(" \
                             "id INTEGER PRIMARY KEY NOT NULL," \
                             "weight FLOAT NOT NULL," \
                             "reps INTEGER NOT NULL," \
-                            "date varchar(9) DEFAULT date('now', 'localtime');" \
-                            "exercise_id INTEGER NOT NULL" \
-                            "FOREIGN KEY (exercise_id) REFERENCES exercise (id)";            
-
+                            "date VARCHAR(9) DEFAULT date('now', 'localtime')," \
+                            "exercise_id INTEGER NOT NULL," \
+                            "FOREIGN KEY (exercise_id) REFERENCES exercise (id));";
+    // deafult date not working
     send_query(query, NULL);
 }
 
@@ -61,24 +61,32 @@ bool Data::select_muscle(string name) {
     return true;
 }
 
-void Data::show_exercises(State current) {
-    const char* query = "SELECT name, compound FROM exercise;";
+void Data::show_exercises(State current, string item) {
     if (current == muscle) {
-        query = "SELECT e.name, e.compound, t.main FROM exercise e " \
+        string query = format("SELECT e.name, e.compound, t.main FROM exercise e " \
                     "INNER JOIN trains t ON e.id = t.exercise_id " \
-                    "INNER JOIN muscle m ON t.muscle_id = m.id;";
+                    "INNER JOIN muscle m ON t.muscle_id = m.id " \
+                    "AND m.name = '{}';", item);
+        send_query(query.c_str(), list_callback);
     }
-    send_query(query, list_callback);
+    else {
+        const char* query = "SELECT name, compound FROM exercise;";
+        send_query(query, list_callback);
+    }
 }
 
-void Data::show_muscles(State current) {
-    const char* query = "SELECT name, upper, muscle_group FROM muscle;";
+void Data::show_muscles(State current, string item) {
     if (current == exercise) {
-        query = "SELECT m.name, m.upper, m.muscle_group, t.main FROM muscle m " \
+        string query = format("SELECT m.name, m.upper, m.muscle_group, t.main FROM muscle m " \
                     "INNER JOIN trains t ON m.id = t.muscle_id " \
-                    "INNER JOIN exercise e ON t.exercise_id = e.id;";
+                    "INNER JOIN exercise e ON t.exercise_id = e.id " \
+                    "AND e.name = '{}';", item);
+        send_query(query.c_str(), list_callback);
     }
-    send_query(query, list_callback);
+    else {
+        const char* query = "SELECT name, upper, muscle_group FROM muscle;";
+        send_query(query, list_callback);
+    }
 }
 
 bool Data::add_exercise(
@@ -174,7 +182,7 @@ bool Data::add_set(string exercise, string weight_input, string reps_input, stri
         return false;
     }
     string query = 
-        format("INSERT INTO set(weight, reps, date, exercise_id) VALUES({:.2f},{},'{}',{});",
+        format("INSERT INTO working_set(weight,reps,date,exercise_id) VALUES({:.2f},{},'{}',{});",
         weight, reps, date, exercise_id);
     if (send_query(query.c_str(), NULL) != SQLITE_OK) {
         return false;
@@ -249,7 +257,7 @@ bool Data::convert_date_input(const string &date_input, string &date) {
     size_t second_period = date_input.substr(first_period+1,string::npos).find_first_of('.');
     string day = date_input.substr(0, first_period);
     string month = date_input.substr(first_period+1, second_period);
-    string year = date_input.substr(second_period+1, string::npos);
+    string year = date_input.substr(first_period+second_period+2, string::npos);
     if (day.size() < 2) {
         day.insert(0, "0");
     }

@@ -139,23 +139,43 @@ int main() {
                 cout << database.output;
             }
             else if (input_type == "exercises") {
-                database.show_exercises(current);
+                database.show_exercises(current, current_item);
                 cout << database.output;
             }
             else if (input_type == "muscles") {
-                database.show_muscles(current);
+                database.show_muscles(current, current_item);
                 cout << database.output;
             }
             else if (input_type == "add") {
-                string add_type = read_input();
+                string add_type;
+                cin >> add_type;
                 if (add_type == "muscle") {
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
                     get_muscle_input(database);
                 }
                 else if (add_type == "exercise") {
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
                     get_exercise_input(database);
                 }
+                else if (add_type == "set") {
+                    if (current != exercise) {
+                        cout << "An exercise has to be selected to add set." << endl;
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                        continue;
+                    }
+                    string weight, reps, date;
+                    cin >> weight >> reps >> date;
+                    if (database.add_set(current_item, weight, reps, date)) {
+                        cout << "Added set successfully." << endl; 
+                    }
+                    else {
+                        cout << "Adding set failed." << endl;
+                        cout << database.output << endl;
+                    }
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                }
                 else {
-                    cout << "Add needs to be followed by 'muscle' or 'exercise'." << endl;
+                    cout << "Add needs to be followed by 'muscle', 'exercise' or 'set'." << endl;
                 }
             }
             else if (input_type == "quit") {

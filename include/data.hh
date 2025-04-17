@@ -18,8 +18,8 @@ class Data {
         ~Data();
         bool select_exercise(string name);
         bool select_muscle(string name);
-        void show_exercises(State current);
-        void show_muscles(State current);
+        void show_exercises(State current, string item);
+        void show_muscles(State current, string item);
         bool add_exercise(
             string name, const char* compound, vector<string> primary, vector<string> secondary);
         bool add_muscle(string name, const char* upper, string group);
