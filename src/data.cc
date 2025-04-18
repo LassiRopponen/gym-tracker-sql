@@ -26,10 +26,9 @@ Data::Data(string name) {
                             "id INTEGER PRIMARY KEY NOT NULL," \
                             "weight FLOAT NOT NULL," \
                             "reps INTEGER NOT NULL," \
-                            "date VARCHAR(9) DEFAULT date('now', 'localtime')," \
+                            "date VARCHAR(9) DEFAULT (date('now', 'localtime'))," \
                             "exercise_id INTEGER NOT NULL," \
                             "FOREIGN KEY (exercise_id) REFERENCES exercise (id));";
-    // deafult date not working
     send_query(query, NULL);
 }
 

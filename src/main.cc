@@ -4,6 +4,8 @@
 
 using namespace std;
 
+// no newline on some error messages
+
 string read_input() {
     string input;
     getline(cin, input);
