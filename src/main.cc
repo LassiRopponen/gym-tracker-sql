@@ -148,6 +148,15 @@ int main() {
                 database.show_muscles(current, current_item);
                 cout << database.output;
             }
+            else if (input_type == "sets") {
+                if (current == nothing) {
+                    cout << "An exercise or muscle has to be selected to show sets." << endl;
+                    continue;
+                }
+                // sets for muscle not working
+                database.show_sets(current, current_item);
+                cout << database.output;
+            }
             else if (input_type == "add") {
                 string add_type;
                 cin >> add_type;

@@ -63,9 +63,9 @@ bool Data::select_muscle(string name) {
 void Data::show_exercises(State current, string item) {
     if (current == muscle) {
         string query = format("SELECT e.name, e.compound, t.main FROM exercise e " \
-                    "INNER JOIN trains t ON e.id = t.exercise_id " \
-                    "INNER JOIN muscle m ON t.muscle_id = m.id " \
-                    "AND m.name = '{}';", item);
+                        "INNER JOIN trains t ON e.id = t.exercise_id " \
+                        "INNER JOIN muscle m ON t.muscle_id = m.id " \
+                        "AND m.name = '{}';", item);
         send_query(query.c_str(), list_callback);
     }
     else {
@@ -77,15 +77,32 @@ void Data::show_exercises(State current, string item) {
 void Data::show_muscles(State current, string item) {
     if (current == exercise) {
         string query = format("SELECT m.name, m.upper, m.muscle_group, t.main FROM muscle m " \
-                    "INNER JOIN trains t ON m.id = t.muscle_id " \
-                    "INNER JOIN exercise e ON t.exercise_id = e.id " \
-                    "AND e.name = '{}';", item);
+                        "INNER JOIN trains t ON m.id = t.muscle_id " \
+                        "INNER JOIN exercise e ON t.exercise_id = e.id " \
+                        "AND e.name = '{}';", item);
         send_query(query.c_str(), list_callback);
     }
     else {
         const char* query = "SELECT name, upper, muscle_group FROM muscle;";
         send_query(query, list_callback);
     }
+}
+
+void Data::show_sets(State current, string item) {
+    string query;
+    if (current == exercise) {
+        string query = format("SELECT s.weight, s.reps, s.date FROM working_set s " \
+                        "INNER JOIN exercise e ON s.exercise_id = e.id " \
+                        "AND e.name = '{}';", item);
+    }
+    else {
+        string query = format("SELECT s.weight, s.reps, s.date FROM working_set s " \
+                        "INNER JOIN exercise e ON s.exercise_id = e.id " \
+                        "INNER JOIN trains t on e.id = t.exercise_id " \
+                        "INNER JOIN muscle m on t.muscle_id = m.id " \
+                        "AND m.name = '{}';", item);
+    }
+    send_query(query.c_str(), list_callback);
 }
 
 bool Data::add_exercise(
