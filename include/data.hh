@@ -1,6 +1,8 @@
 #include <string>
 #include <vector>
 #include <format>
+#include <sstream>
+#include <string.h>
 
 #include "sqlite3.h"
 
@@ -34,6 +36,7 @@ class Data {
         static int id_callback(void* ptr, int argc, char** argv, char** azColName);
         bool find_muscle_ids(const vector<string> &muscles, vector<string> &ids);
         bool convert_date_input(const string &date_input, string &date);
+        static string convert_output(const char* col_name, const char* content);
 
         sqlite3* db;
 };

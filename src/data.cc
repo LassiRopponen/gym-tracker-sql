@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "data.hh"
 
 Data::Data(string name) {
@@ -90,17 +88,19 @@ void Data::show_muscles(State current, string item) {
 
 void Data::show_sets(State current, string item) {
     string query;
-    if (current == exercise) {
-        string query = format("SELECT s.weight, s.reps, s.date FROM working_set s " \
-                        "INNER JOIN exercise e ON s.exercise_id = e.id " \
-                        "AND e.name = '{}';", item);
-    }
-    else {
-        string query = format("SELECT s.weight, s.reps, s.date FROM working_set s " \
-                        "INNER JOIN exercise e ON s.exercise_id = e.id " \
-                        "INNER JOIN trains t on e.id = t.exercise_id " \
-                        "INNER JOIN muscle m on t.muscle_id = m.id " \
-                        "AND m.name = '{}';", item);
+    switch (current) {
+        case exercise:
+            query = format("SELECT s.weight, s.reps, s.date FROM working_set s " \
+                            "INNER JOIN exercise e ON s.exercise_id = e.id " \
+                            "AND e.name = '{}';", item);
+            break;
+        case muscle:
+            query = format("SELECT s.weight, s.reps, s.date FROM working_set s " \
+                            "INNER JOIN exercise e ON s.exercise_id = e.id " \
+                            "INNER JOIN trains t ON e.id = t.exercise_id " \
+                            "INNER JOIN muscle m ON t.muscle_id = m.id " \
+                            "AND m.name = '{}';", item);
+            break;
     }
     send_query(query.c_str(), list_callback);
 }
@@ -223,7 +223,7 @@ int Data::list_callback(void* ptr, int argc, char** argv, char** azColName)
     for (int i = 0; i < argc; i++) {
         string col = azColName[i];
         col += ": ";
-        col += argv[i] ? argv[i] : "NULL";
+        col += convert_output(azColName[i], argv[i]);
         col += "; ";
         output->append(col);
     }
@@ -237,7 +237,7 @@ int Data::single_callback(void* ptr, int argc, char** argv, char** azColName)
     for (int i = 0; i < argc; i++) {
         string col = azColName[i];
         col += ": ";
-        col += argv[i] ? argv[i] : "NULL";
+        col += convert_output(azColName[i], argv[i]);
         col += "\n";
         output->append(col);
     }
@@ -292,4 +292,19 @@ bool Data::convert_date_input(const string &date_input, string &date) {
         return false;
     }
     return true;
+}
+
+string Data::convert_output(const char* col_name, const char* content) {
+    if (strcmp(col_name, "date") == 0) {
+        int day, month, year;
+        char delim;
+        istringstream iss(content);
+        iss >> year >> delim >> month >> delim >> day;
+        ostringstream date;
+        date << day << '.' << month << '.' << year;
+        return date.str();
+    }
+    else {
+        return content ? content : "NULL";
+    }
 }
