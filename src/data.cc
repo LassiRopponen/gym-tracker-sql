@@ -40,7 +40,7 @@ bool Data::select_exercise(string name) {
         return false;
     }
     if (output == "") {
-        output = format("No exercise with name {}.", name);
+        output = format("No exercise with name {}.\n", name);
         return false;
     }
     return true;
@@ -52,7 +52,7 @@ bool Data::select_muscle(string name) {
         return false;
     }
     if (output == "") {
-        output = format("No muscle with name {}", name);
+        output = format("No muscle with name {}.\n", name);
         return false;
     }
     return true;
@@ -70,6 +70,9 @@ void Data::show_exercises(State current, string item) {
         const char* query = "SELECT name, compound FROM exercise;";
         send_query(query, list_callback);
     }
+    if (output == "") {
+        output = "No exercises.\n";
+    }
 }
 
 void Data::show_muscles(State current, string item) {
@@ -84,25 +87,63 @@ void Data::show_muscles(State current, string item) {
         const char* query = "SELECT name, upper, muscle_group FROM muscle;";
         send_query(query, list_callback);
     }
+    if (output == "") {
+        output = "No muscles.\n";
+    }
 }
 
 void Data::show_sets(State current, string item) {
-    string query;
+    string query = "SELECT e.name AS exercise, s.date, s.weight, s.reps FROM working_set s " \
+                    "INNER JOIN exercise e ON s.exercise_id = e.id;";
     switch (current) {
         case exercise:
-            query = format("SELECT s.weight, s.reps, s.date FROM working_set s " \
+            query = format("SELECT s.date, s.weight, s.reps FROM working_set s " \
                             "INNER JOIN exercise e ON s.exercise_id = e.id " \
                             "AND e.name = '{}';", item);
             break;
         case muscle:
-            query = format("SELECT s.weight, s.reps, s.date FROM working_set s " \
-                            "INNER JOIN exercise e ON s.exercise_id = e.id " \
-                            "INNER JOIN trains t ON e.id = t.exercise_id " \
-                            "INNER JOIN muscle m ON t.muscle_id = m.id " \
-                            "AND m.name = '{}';", item);
+            query =
+                format("SELECT e.name AS exercise, s.date, s.weight, s.reps FROM working_set s " \
+                    "INNER JOIN exercise e ON s.exercise_id = e.id " \
+                    "INNER JOIN trains t ON e.id = t.exercise_id " \
+                    "INNER JOIN muscle m ON t.muscle_id = m.id " \
+                    "AND m.name = '{}';", item);
             break;
     }
     send_query(query.c_str(), list_callback);
+    if (output == "") {
+        output = "No sets.\n";
+    }
+}
+
+void Data::show_sets_for_date(State current, string item, string date_input) {
+    string date;
+    if (!convert_date_input(date_input, date)) {
+        return;
+    }
+    string query =
+        format("SELECT e.name AS exercise, s.date, s.weight, s.reps FROM working_set s " \
+            "INNER JOIN exercise e ON s.exercise_id = e.id AND s.date = '{}';", date);
+    switch (current) {
+        case exercise:
+            query = 
+                format("SELECT e.name AS exercise, s.date, s.weight, s.reps FROM working_set s " \
+                        "INNER JOIN exercise e ON s.exercise_id = e.id " \
+                        "AND e.name = '{}' AND s.date = '{}';", item, date);
+            break;
+        case muscle:
+            query = 
+                format("SELECT e.name AS exercise, s.date, s.weight, s.reps FROM working_set s " \
+                        "INNER JOIN exercise e ON s.exercise_id = e.id " \
+                        "INNER JOIN trains t ON e.id = t.exercise_id " \
+                        "INNER JOIN muscle m ON t.muscle_id = m.id " \
+                        "AND m.name = '{}' AND s.date = '{}';", item, date);
+            break;
+    }
+    send_query(query.c_str(), list_callback);
+    if (output == "") {
+        output = "No sets.\n";
+    }
 }
 
 bool Data::add_exercise(
@@ -122,7 +163,7 @@ bool Data::add_exercise(
     int result = send_query(exercise_query.c_str(), NULL);
     if (result != SQLITE_OK) {
         if (result == SQLITE_CONSTRAINT) {
-            output = format("Exercise with name {} already exists.", name);
+            output = format("Exercise with name {} already exists.\n", name);
         }
         return false;
     }
@@ -154,7 +195,7 @@ bool Data::add_muscle(string name, const char* upper, string group) {
     int result = send_query(query.c_str(), NULL);
     if (result != SQLITE_OK) {
         if (result == SQLITE_CONSTRAINT) {
-            output = format("Muscle with name {} already exists.", name);
+            output = format("Muscle with name {} already exists.\n", name);
         }
         return false;
     }
@@ -167,7 +208,7 @@ bool Data::add_set(string exercise, string weight_input, string reps_input, stri
         return false;
     }
     if (output == "") {
-        output = format("No exercise with name {}.", exercise);
+        output = format("No exercise with name {}.\n", exercise);
         return false;
     }
     string exercise_id = output;
@@ -179,7 +220,7 @@ bool Data::add_set(string exercise, string weight_input, string reps_input, stri
         }
     }
     catch (...) {
-        output = "Weight must be a positive decimal number.";
+        output = "Weight must be a positive decimal number.\n";
         return false;
     }
     int reps;
@@ -190,7 +231,7 @@ bool Data::add_set(string exercise, string weight_input, string reps_input, stri
         }
     }
     catch (...) {
-        output = "Reps must be a natural number.";
+        output = "Reps must be a natural number.\n";
         return false;
     }
     string date;
@@ -213,6 +254,7 @@ int Data::send_query(const char* query, int (*callback)(void*, int, char**, char
     if (result != SQLITE_OK) {
         sqlite3_free(err_msg);
         output = sqlite3_errmsg(db);
+        output += "\n";
     }
     return result;
 }
@@ -260,7 +302,7 @@ bool Data::find_muscle_ids(const vector<string> &muscles, vector<string> &ids) {
             return false;
         }
         if (output == "") {
-            output = format("No muscle with name {}.", muscle);
+            output = format("No muscle with name {}.\n", muscle);
             return false;
         }
         ids.push_back(output);
@@ -288,7 +330,7 @@ bool Data::convert_date_input(const string &date_input, string &date) {
         return false;
     }
     if (output == "NULL") {
-        output = "Incorrect date.";
+        output = "Incorrect date.\n";
         return false;
     }
     return true;
@@ -303,6 +345,17 @@ string Data::convert_output(const char* col_name, const char* content) {
         ostringstream date;
         date << day << '.' << month << '.' << year;
         return date.str();
+    }
+    if (strcmp(col_name, "compound") == 0 || 
+        strcmp(col_name, "upper") == 0 || 
+        strcmp(col_name, "main") == 0)
+    {
+        switch (content[0]) {
+            case '1':
+                return "yes";
+            default:
+                return "no";
+        }
     }
     else {
         return content ? content : "NULL";

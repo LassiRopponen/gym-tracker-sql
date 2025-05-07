@@ -23,6 +23,7 @@ class Data {
         void show_exercises(State current, string item);
         void show_muscles(State current, string item);
         void show_sets(State current, string item);
+        void show_sets_for_date(State current, string item, string date);
         bool add_exercise(
             string name, const char* compound, vector<string> primary, vector<string> secondary);
         bool add_muscle(string name, const char* upper, string group);

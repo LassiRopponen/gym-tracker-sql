@@ -1,10 +1,9 @@
 #include <iostream>
+#include <cctype>
 
 #include "data.hh"
 
 using namespace std;
-
-// no newline on some error messages
 
 string read_input() {
     string input;
@@ -149,12 +148,13 @@ int main() {
                 cout << database.output;
             }
             else if (input_type == "sets") {
-                if (current == nothing) {
-                    cout << "An exercise or muscle has to be selected to show sets." << endl;
-                    continue;
+                if (!iscntrl(cin.peek())) {
+                    string date = read_input();
+                    database.show_sets_for_date(current, current_item, date);
                 }
-                // sets for muscle not working
-                database.show_sets(current, current_item);
+                else {
+                    database.show_sets(current, current_item);
+                }
                 cout << database.output;
             }
             else if (input_type == "add") {
@@ -188,6 +188,11 @@ int main() {
                 else {
                     cout << "Add needs to be followed by 'muscle', 'exercise' or 'set'." << endl;
                 }
+            }
+            else if (input_type == "back") {
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                current = nothing;
+                current_item = "";
             }
             else if (input_type == "quit") {
                 break;
