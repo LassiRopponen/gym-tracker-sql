@@ -28,6 +28,7 @@ class Data {
             string name, const char* compound, vector<string> primary, vector<string> secondary);
         bool add_muscle(string name, const char* upper, string group);
         bool add_set(string exercise, string weight, string reps, string date);
+        void delete_by_name(State current, string item);
 
         string output = "";
     private:

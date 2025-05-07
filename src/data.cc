@@ -1,5 +1,7 @@
 #include "data.hh"
 
+#include <iostream>
+
 Data::Data(string name) {
     if(sqlite3_open(name.c_str(), &db) != SQLITE_OK) {
         throw sqlite3_errmsg(db);
@@ -19,14 +21,19 @@ Data::Data(string name) {
                             "exercise_id INTEGER NOT NULL," \
                             "muscle_id INTEGER NOT NULL," \
                             "main BOOLEAN NOT NULL," \
-                            "PRIMARY KEY (exercise_id, muscle_id));" \
+                            "PRIMARY KEY (exercise_id, muscle_id))" \
+                            "FOREIGN KEY (exercise_id) REFERENCES exercise (id) " \
+                            "ON DELETE CASCADE" \
+                            "FOREIGN KEY (muscle_id) REFERENCES muscle (id) " \
+                            "ON DELETE CASCADE;" \
                         "CREATE TABLE IF NOT EXISTS working_set(" \
                             "id INTEGER PRIMARY KEY NOT NULL," \
                             "weight FLOAT NOT NULL," \
                             "reps INTEGER NOT NULL," \
                             "date VARCHAR(9) DEFAULT (date('now', 'localtime'))," \
                             "exercise_id INTEGER NOT NULL," \
-                            "FOREIGN KEY (exercise_id) REFERENCES exercise (id));";
+                            "FOREIGN KEY (exercise_id) REFERENCES exercise (id)) " \
+                            "ON DELETE CASCADE;";
     send_query(query, NULL);
 }
 
@@ -246,6 +253,13 @@ bool Data::add_set(string exercise, string weight_input, string reps_input, stri
     }
     return true;
 }
+
+void Data::delete_by_name(State current, string item) {
+    const char* table = current == exercise ? "exercise" : "muscle";
+    string query = format("DELETE FROM {} WHERE name = '{}';", table, item);
+    send_query(query.c_str(), NULL);
+}
+
 
 int Data::send_query(const char* query, int (*callback)(void*, int, char**, char**)) {
     output = "";

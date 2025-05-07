@@ -189,6 +189,15 @@ int main() {
                     cout << "Add needs to be followed by 'muscle', 'exercise' or 'set'." << endl;
                 }
             }
+            else if (input_type == "delete") {
+                if (current == nothing) {
+                    cout << "No item to delete." << endl;
+                    continue;
+                }
+                database.delete_by_name(current, current_item);
+                current = nothing;
+                current_item = "";
+            }
             else if (input_type == "back") {
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 current = nothing;
