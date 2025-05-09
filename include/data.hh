@@ -25,11 +25,17 @@ class Data {
         void show_sets(State current, string item);
         void show_sets_for_date(State current, string item, string date);
         bool add_exercise(
-            string name, const char* compound, vector<string> primary, vector<string> secondary);
+            string name,
+            const char* compound,
+            const vector<string> &primary,
+            const vector<string> &secondary);
         bool add_muscle(string name, const char* upper, string group);
         bool add_set(string exercise, string weight, string reps, string date);
         void delete_by_name(State current, string item);
         void delete_set(string id);
+        void update_bool(string name, const char* table, const char* col, string value);
+        void update_text(string name, const char* table, const char* col, string value);
+        bool update_muscles(string name, const char* main, const vector<string> &muscles);
 
         string output = "";
     private:

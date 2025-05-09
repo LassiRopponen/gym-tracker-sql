@@ -106,6 +106,42 @@ void get_exercise_input(Data &database) {
     }
 }
 
+void update_bool(Data &database, string current_item, const char* table, const char* col) {
+    const char* new_bool;
+    char input_char = prompt_input("y/n: ")[0];
+    switch(input_char) {
+        case('y'):
+            new_bool = "TRUE";
+            break;
+        case('n'):
+            new_bool = "FALSE";
+            break;
+        default:
+            return;
+    }
+    database.update_bool(current_item, table, col, new_bool);
+    cout << "Done." << endl;
+}
+
+void update_muscles(Data &database, string current_item, const char* main) {
+    vector<string> muscles;
+    string muscle;
+    cout << "type 'done' to finish" << endl;
+    while (true) {
+        muscle = prompt_input(">");
+        if (muscle == "done") {
+            break;
+        }
+        muscles.push_back(muscle);
+    }
+    if (database.update_muscles(current_item, main, muscles)) {
+        cout << "Done." << endl;
+    }
+    else {
+        cout << database.output;
+    }
+}
+
 int main() {
     try {
         Data database = Data("test.db");
@@ -202,6 +238,22 @@ int main() {
                 database.delete_by_name(current, current_item);
                 current = nothing;
                 current_item = "";
+            }
+            else if (input_type == "update") {
+                string update_type = read_input();
+                if (current == exercise) {
+                    if (update_type == "name") {
+                        string new_name = prompt_input("new name: ");
+                        database.update_text(current_item, "exercise", "name", new_name);
+                        current_item = new_name;
+                    }
+                    else if (update_type == "compound") {
+                        update_bool(database, current_item, "exercise", "compound");
+                    }
+                    else if (update_type == "primary") {
+                        update_muscles(database, current_item, "TRUE");
+                    }
+                }
             }
             else if (input_type == "back") {
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');

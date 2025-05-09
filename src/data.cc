@@ -156,7 +156,10 @@ void Data::show_sets_for_date(State current, string item, string date_input) {
 }
 
 bool Data::add_exercise(
-        string name, const char* compound, vector<string> primary, vector<string> secondary
+        string name,
+        const char* compound,
+        const vector<string> &primary,
+        const vector<string> &secondary
     ) {
     vector<string> primary_ids;
     if (!find_muscle_ids(primary, primary_ids)) {
@@ -265,6 +268,42 @@ void Data::delete_by_name(State current, string item) {
 void Data::delete_set(string id) {
     string query = format("DELETE FROM working_set WHERE id = {};", id);
     send_query(query.c_str(), NULL);
+}
+
+void Data::update_bool(string name, string table, string col, string value) {
+    string query = format("UPDATE {} SET {} = {};", table, col, value);
+    send_query(query.c_str(), NULL);
+}
+
+void Data::update_text(string name, string table, string col, string value) {
+    string query = format("UPDATE {} SET {} = '{}';", table, col, value);
+    send_query(query.c_str(), NULL);
+}
+
+bool Data::update_muscles(string name, const char* main, const vector<string> &muscles) {
+    string id_query = format("SELECT id FROM exercise WHERE name = '{}';", name);
+    if (!send_query(id_query.c_str(), id_callback)) {
+        return false;
+    }
+    string id = output;
+    string delete_query = 
+        format("DELETE FROM trains WHERE exercise_id = {} AND main = {};", id, main);
+    if (!send_query(delete_query.c_str(), NULL)) {
+        return false;
+    }
+    vector<string> muscle_ids;
+    if (!find_muscle_ids(muscles, muscle_ids)) {
+        return false;
+    }
+    for (string muscle_id : muscle_ids) {
+        string trains_query = 
+            format("INSERT INTO trains(exercise_id,muscle_id,main) VALUES({},{},{});",
+                id, muscle_id, main);
+        if (send_query(trains_query.c_str(), NULL) != SQLITE_OK) {
+            return false;
+        }
+    }
+    return true;
 }
 
 int Data::send_query(const char* query, int (*callback)(void*, int, char**, char**)) {
