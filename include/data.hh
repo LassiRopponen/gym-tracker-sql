@@ -29,6 +29,7 @@ class Data {
         bool add_muscle(string name, const char* upper, string group);
         bool add_set(string exercise, string weight, string reps, string date);
         void delete_by_name(State current, string item);
+        void delete_set(string id);
 
         string output = "";
     private:

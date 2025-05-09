@@ -47,7 +47,7 @@ void get_muscle_input(Data &database) {
         }
         else {
             cout << "Adding muscle failed." << endl;
-            cout << database.output << endl;
+            cout << database.output;
         }
     }
     catch(...) {
@@ -98,7 +98,7 @@ void get_exercise_input(Data &database) {
         }
         else {
             cout << "Adding exercise failed." << endl;
-            cout << database.output << endl;
+            cout << database.output;
         }
     }
     catch(...) {
@@ -181,7 +181,7 @@ int main() {
                     }
                     else {
                         cout << "Adding set failed." << endl;
-                        cout << database.output << endl;
+                        cout << database.output;
                     }
                     cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 }
@@ -190,6 +190,11 @@ int main() {
                 }
             }
             else if (input_type == "delete") {
+                if (!iscntrl(cin.peek())) {
+                    string id = read_input();
+                    database.delete_set(id);
+                    continue;
+                }
                 if (current == nothing) {
                     cout << "No item to delete." << endl;
                     continue;

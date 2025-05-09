@@ -21,20 +21,21 @@ Data::Data(string name) {
                             "exercise_id INTEGER NOT NULL," \
                             "muscle_id INTEGER NOT NULL," \
                             "main BOOLEAN NOT NULL," \
-                            "PRIMARY KEY (exercise_id, muscle_id))" \
+                            "PRIMARY KEY (exercise_id, muscle_id)," \
                             "FOREIGN KEY (exercise_id) REFERENCES exercise (id) " \
-                            "ON DELETE CASCADE" \
+                            "ON DELETE CASCADE," \
                             "FOREIGN KEY (muscle_id) REFERENCES muscle (id) " \
-                            "ON DELETE CASCADE;" \
+                            "ON DELETE CASCADE);" \
                         "CREATE TABLE IF NOT EXISTS working_set(" \
                             "id INTEGER PRIMARY KEY NOT NULL," \
                             "weight FLOAT NOT NULL," \
                             "reps INTEGER NOT NULL," \
                             "date VARCHAR(9) DEFAULT (date('now', 'localtime'))," \
                             "exercise_id INTEGER NOT NULL," \
-                            "FOREIGN KEY (exercise_id) REFERENCES exercise (id)) " \
-                            "ON DELETE CASCADE;";
+                            "FOREIGN KEY (exercise_id) REFERENCES exercise (id) " \
+                            "ON DELETE CASCADE);";
     send_query(query, NULL);
+    cout << output;
 }
 
 Data::~Data() {
@@ -100,17 +101,17 @@ void Data::show_muscles(State current, string item) {
 }
 
 void Data::show_sets(State current, string item) {
-    string query = "SELECT e.name AS exercise, s.date, s.weight, s.reps FROM working_set s " \
+    string query = "SELECT s.id, e.name AS exercise, s.date, s.weight, s.reps FROM working_set s " \
                     "INNER JOIN exercise e ON s.exercise_id = e.id;";
     switch (current) {
         case exercise:
-            query = format("SELECT s.date, s.weight, s.reps FROM working_set s " \
+            query = format("SELECT s.id, s.date, s.weight, s.reps FROM working_set s " \
                             "INNER JOIN exercise e ON s.exercise_id = e.id " \
                             "AND e.name = '{}';", item);
             break;
         case muscle:
-            query =
-                format("SELECT e.name AS exercise, s.date, s.weight, s.reps FROM working_set s " \
+            query = format("SELECT s.id, e.name AS exercise, s.date, s.weight, s.reps" \
+                    "FROM working_set s " \
                     "INNER JOIN exercise e ON s.exercise_id = e.id " \
                     "INNER JOIN trains t ON e.id = t.exercise_id " \
                     "INNER JOIN muscle m ON t.muscle_id = m.id " \
@@ -129,18 +130,19 @@ void Data::show_sets_for_date(State current, string item, string date_input) {
         return;
     }
     string query =
-        format("SELECT e.name AS exercise, s.date, s.weight, s.reps FROM working_set s " \
+        format("SELECT s.id, e.name AS exercise, s.date, s.weight, s.reps FROM working_set s " \
             "INNER JOIN exercise e ON s.exercise_id = e.id AND s.date = '{}';", date);
     switch (current) {
         case exercise:
-            query = 
-                format("SELECT e.name AS exercise, s.date, s.weight, s.reps FROM working_set s " \
+            query = format("SELECT s.id, e.name AS exercise, s.date, s.weight, s.reps " \
+                        "FROM working_set s " \
                         "INNER JOIN exercise e ON s.exercise_id = e.id " \
                         "AND e.name = '{}' AND s.date = '{}';", item, date);
             break;
         case muscle:
-            query = 
-                format("SELECT e.name AS exercise, s.date, s.weight, s.reps FROM working_set s " \
+            query =
+                format("SELECT s.id, e.name AS exercise, s.date, s.weight, s.reps " \
+                        "FROM working_set s " \
                         "INNER JOIN exercise e ON s.exercise_id = e.id " \
                         "INNER JOIN trains t ON e.id = t.exercise_id " \
                         "INNER JOIN muscle m ON t.muscle_id = m.id " \
@@ -260,6 +262,10 @@ void Data::delete_by_name(State current, string item) {
     send_query(query.c_str(), NULL);
 }
 
+void Data::delete_set(string id) {
+    string query = format("DELETE FROM working_set WHERE id = {};", id);
+    send_query(query.c_str(), NULL);
+}
 
 int Data::send_query(const char* query, int (*callback)(void*, int, char**, char**)) {
     output = "";
