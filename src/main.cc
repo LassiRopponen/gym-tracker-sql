@@ -5,6 +5,9 @@
 
 using namespace std;
 
+/**
+ * Returns input from the user with leading and trailing spaces removed.
+ */
 string read_input() {
     string input;
     getline(cin, input);
@@ -14,6 +17,10 @@ string read_input() {
     return input;
 }
 
+/**
+ * Prompts input from the user and throws if the input is 'cancel'.
+ * The exception can be caught by callers to enable better usability.
+ */
 string prompt_input(const char* prompt) {
     cout << prompt;
     string input = read_input();
@@ -23,6 +30,10 @@ string prompt_input(const char* prompt) {
     return input;
 }
 
+/**
+ * Prompts input from the user to get muscle information and tries to create a new database object
+ * based on this information.
+ */
 void get_muscle_input(Data &database) {
     try {
         string name = prompt_input("name: ");
@@ -55,6 +66,10 @@ void get_muscle_input(Data &database) {
     }
 }
 
+/**
+ * Prompts input from the user to get exercise information and tries to create a new database object
+ * based on this information.
+ */
 void get_exercise_input(Data &database) {
     try {
         string name = prompt_input("name: ");
@@ -106,6 +121,9 @@ void get_exercise_input(Data &database) {
     }
 }
 
+/**
+ * Prompts boolean type input from the user and updates a database object based on the information.
+ */
 void update_bool(Data &database, const string &current_item, const char* table, const char* col) {
     const char* new_bool;
     char input_char = prompt_input("y/n: ")[0];
@@ -123,6 +141,9 @@ void update_bool(Data &database, const string &current_item, const char* table, 
     cout << "Done." << endl;
 }
 
+/**
+ * Prompts a new set of muscle names from the user and updates the database based on the input.
+ */
 void update_muscles(Data &database, const string &current_item, const char* main) {
     vector<string> muscles;
     string muscle;
