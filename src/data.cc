@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-Data::Data(string name) {
+Data::Data(const string &name) {
     if(sqlite3_open(name.c_str(), &db) != SQLITE_OK) {
         throw sqlite3_errmsg(db);
     }
@@ -42,7 +42,7 @@ Data::~Data() {
     sqlite3_close(db);
 }
 
-bool Data::select_exercise(string name) {
+bool Data::select_exercise(const string &name) {
     string query = format("SELECT name, compound FROM exercise WHERE name='{}';", name);
     if (send_query(query.c_str(), single_callback) != SQLITE_OK) {
         return false;
@@ -54,7 +54,7 @@ bool Data::select_exercise(string name) {
     return true;
 }
 
-bool Data::select_muscle(string name) {
+bool Data::select_muscle(const string &name) {
     string query = format("SELECT name, upper, muscle_group FROM muscle WHERE name='{}';", name);
     if (send_query(query.c_str(), single_callback) != SQLITE_OK) {
         return false;
@@ -66,7 +66,7 @@ bool Data::select_muscle(string name) {
     return true;
 }
 
-void Data::show_exercises(State current, string item) {
+void Data::show_exercises(State current, const string &item) {
     if (current == muscle) {
         string query = format("SELECT e.name, e.compound, t.main FROM exercise e " \
                         "INNER JOIN trains t ON e.id = t.exercise_id " \
@@ -83,7 +83,7 @@ void Data::show_exercises(State current, string item) {
     }
 }
 
-void Data::show_muscles(State current, string item) {
+void Data::show_muscles(State current, const string &item) {
     if (current == exercise) {
         string query = format("SELECT m.name, m.upper, m.muscle_group, t.main FROM muscle m " \
                         "INNER JOIN trains t ON m.id = t.muscle_id " \
@@ -100,7 +100,7 @@ void Data::show_muscles(State current, string item) {
     }
 }
 
-void Data::show_sets(State current, string item) {
+void Data::show_sets(State current, const string &item) {
     string query = "SELECT s.id, e.name AS exercise, s.date, s.weight, s.reps FROM working_set s " \
                     "INNER JOIN exercise e ON s.exercise_id = e.id;";
     switch (current) {
@@ -124,7 +124,7 @@ void Data::show_sets(State current, string item) {
     }
 }
 
-void Data::show_sets_for_date(State current, string item, string date_input) {
+void Data::show_sets_for_date(State current, const string &item, const string &date_input) {
     string date;
     if (!convert_date_input(date_input, date)) {
         return;
@@ -156,7 +156,7 @@ void Data::show_sets_for_date(State current, string item, string date_input) {
 }
 
 bool Data::add_exercise(
-        string name,
+        const string &name,
         const char* compound,
         const vector<string> &primary,
         const vector<string> &secondary
@@ -197,11 +197,10 @@ bool Data::add_exercise(
             return false;
         }
     }
-
     return true;
 }
 
-bool Data::add_muscle(string name, const char* upper, string group) {
+bool Data::add_muscle(const string &name, const char* upper, const string &group) {
     string query = format(
         "INSERT INTO muscle(name,upper,muscle_group) VALUES('{}',{},'{}');", name, upper, group);
     int result = send_query(query.c_str(), NULL);
@@ -214,7 +213,9 @@ bool Data::add_muscle(string name, const char* upper, string group) {
     return true;
 }
 
-bool Data::add_set(string exercise, string weight_input, string reps_input, string date_input) {
+bool Data::add_set(const string &exercise, const string &weight_input, const string &reps_input,
+    const string &date_input)
+    {
     string exercise_query = format("SELECT id FROM exercise WHERE name='{}';", exercise);
     if (send_query(exercise_query.c_str(), id_callback) != SQLITE_OK) {
         return false;
@@ -259,36 +260,40 @@ bool Data::add_set(string exercise, string weight_input, string reps_input, stri
     return true;
 }
 
-void Data::delete_by_name(State current, string item) {
+void Data::delete_by_name(State current, const string &item) {
     const char* table = current == exercise ? "exercise" : "muscle";
     string query = format("DELETE FROM {} WHERE name = '{}';", table, item);
     send_query(query.c_str(), NULL);
 }
 
-void Data::delete_set(string id) {
+void Data::delete_set(const string &id) {
     string query = format("DELETE FROM working_set WHERE id = {};", id);
     send_query(query.c_str(), NULL);
 }
 
-void Data::update_bool(string name, string table, string col, string value) {
+void Data::update_bool(
+    const string &name, const char* table, const char* col, const string &value)
+    {
     string query = format("UPDATE {} SET {} = {};", table, col, value);
     send_query(query.c_str(), NULL);
 }
 
-void Data::update_text(string name, string table, string col, string value) {
+void Data::update_text(
+    const string &name, const char* table, const char* col, const string &value)
+    {
     string query = format("UPDATE {} SET {} = '{}';", table, col, value);
     send_query(query.c_str(), NULL);
 }
 
-bool Data::update_muscles(string name, const char* main, const vector<string> &muscles) {
+bool Data::update_muscles(const string &name, const char* main, const vector<string> &muscles) {
     string id_query = format("SELECT id FROM exercise WHERE name = '{}';", name);
-    if (!send_query(id_query.c_str(), id_callback)) {
+    if (send_query(id_query.c_str(), id_callback) != SQLITE_OK) {
         return false;
     }
     string id = output;
     string delete_query = 
         format("DELETE FROM trains WHERE exercise_id = {} AND main = {};", id, main);
-    if (!send_query(delete_query.c_str(), NULL)) {
+    if (send_query(delete_query.c_str(), NULL) != SQLITE_OK) {
         return false;
     }
     vector<string> muscle_ids;

@@ -16,26 +16,26 @@ enum State {
 
 class Data {
     public:
-        Data(string name);
+        Data(const string &name);
         ~Data();
-        bool select_exercise(string name);
-        bool select_muscle(string name);
-        void show_exercises(State current, string item);
-        void show_muscles(State current, string item);
-        void show_sets(State current, string item);
-        void show_sets_for_date(State current, string item, string date);
-        bool add_exercise(
-            string name,
-            const char* compound,
-            const vector<string> &primary,
+        bool select_exercise(const string &name);
+        bool select_muscle(const string &name);
+        void show_exercises(State current, const string &item);
+        void show_muscles(State current, const string &item);
+        void show_sets(State current, const string &item);
+        void show_sets_for_date(State current, const string &item, const string &date);
+        bool add_exercise(const string &name, const char* compound, const vector<string> &primary,
             const vector<string> &secondary);
-        bool add_muscle(string name, const char* upper, string group);
-        bool add_set(string exercise, string weight, string reps, string date);
-        void delete_by_name(State current, string item);
-        void delete_set(string id);
-        void update_bool(string name, const char* table, const char* col, string value);
-        void update_text(string name, const char* table, const char* col, string value);
-        bool update_muscles(string name, const char* main, const vector<string> &muscles);
+        bool add_muscle(const string &name, const char* upper, const string &group);
+        bool add_set(
+            const string &exercise, const string &weight, const string &reps, const string &date);
+        void delete_by_name(State current, const string &item);
+        void delete_set(const string &id);
+        void update_bool(
+            const string &name, const char* table, const char* col, const string &value);
+        void update_text(
+            const string &name, const char* table, const char* col, const string &value);
+        bool update_muscles(const string &name, const char* main, const vector<string> &muscles);
 
         string output = "";
     private:

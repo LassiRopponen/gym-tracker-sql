@@ -14,7 +14,7 @@ string read_input() {
     return input;
 }
 
-string prompt_input(string prompt) {
+string prompt_input(const char* prompt) {
     cout << prompt;
     string input = read_input();
     if (input == "cancel") {
@@ -106,7 +106,7 @@ void get_exercise_input(Data &database) {
     }
 }
 
-void update_bool(Data &database, string current_item, const char* table, const char* col) {
+void update_bool(Data &database, const string &current_item, const char* table, const char* col) {
     const char* new_bool;
     char input_char = prompt_input("y/n: ")[0];
     switch(input_char) {
@@ -123,7 +123,7 @@ void update_bool(Data &database, string current_item, const char* table, const c
     cout << "Done." << endl;
 }
 
-void update_muscles(Data &database, string current_item, const char* main) {
+void update_muscles(Data &database, const string &current_item, const char* main) {
     vector<string> muscles;
     string muscle;
     cout << "type 'done' to finish" << endl;
@@ -246,6 +246,7 @@ int main() {
                         string new_name = prompt_input("new name: ");
                         database.update_text(current_item, "exercise", "name", new_name);
                         current_item = new_name;
+                        cout << "Done." << endl;
                     }
                     else if (update_type == "compound") {
                         update_bool(database, current_item, "exercise", "compound");
@@ -253,6 +254,36 @@ int main() {
                     else if (update_type == "primary") {
                         update_muscles(database, current_item, "TRUE");
                     }
+                    else if (update_type == "secondary") {
+                        update_muscles(database, current_item, "FALSE");
+                    }
+                    else {
+                        cout << 
+                            "Exercise fields are 'name', 'compound', 'primary' and 'secondary'." 
+                            << endl;
+                    }
+                }
+                else if (current == muscle) {
+                    if (update_type == "name") {
+                        string new_name = prompt_input("new name: ");
+                        database.update_text(current_item, "muscle", "name", new_name);
+                        current_item = new_name;
+                        cout << "Done." << endl;
+                    }
+                    else if (update_type == "group") {
+                        string new_group = prompt_input("new muscle group: ");
+                        database.update_text(current_item, "muscle", "muscle_group", new_group);
+                        cout << "Done." << endl;
+                    }
+                    else if (update_type == "upper") {
+                        update_bool(database, current_item, "muscle", "upper");
+                    }
+                    else {
+                        cout << "Muscle fields are 'name', 'group' and 'upper'." << endl;
+                    }
+                }
+                else {
+                    cout << "Exercise or muscle must be selected before updating." << endl;
                 }
             }
             else if (input_type == "back") {
