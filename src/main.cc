@@ -1,9 +1,50 @@
 #include <iostream>
 #include <cctype>
+#include <unordered_map>
 
 #include "data.hh"
 
 using namespace std;
+
+const char* help = "exercise <exercise name>: choose exercise\n" \
+    "muscle <muscle name>: choose muscle\n" \
+    "exercises: show list of exercises\n" \
+    "muscles: show list of muscles\n" \
+    "sets: show list of sets\n" \
+    "sets <date (dd.mm.yyyy)>: show list of sets for given date\n" \
+    "add muscle: add muscle through prompts\n" \
+    "add exercise: add exercise through prompts\n" \
+    "add set <weight> <reps> <date (dd.mm.yyyy)>: add set with given information\n" \
+    "delete: delete currently chosen exercise or muscle\n" \
+    "delete <set id>: delete set with given id\n" \
+    "update <field name>: update specified field for selected item\n" \
+    "back: go back to having no chosen item\n" \
+    "quit: quit program\n" \
+    "Type 'help <first word of command>' for more information about the command.'\n";
+
+unordered_map<string, const char*> help_table = {
+    {"exercise", "Shows information about the exercise and selects it as the currently chosen " \
+        "item. The chosen item affects some other commands.\n"},
+    {"muscle", "Shows information about the muscle and selects it as the currently chosen item. " \
+        "The chosen item affects some other commands.\n"},
+    {"exercises", "Lists all exercises in the database. If a muscle is currently selected, only " \
+        "shows exercises which train that muscle.\n"},
+    {"muscles", "Lists all muscles in the database. If an exercise is currently selected, only " \
+        "shows muscles which are trained by that exercise.\n"},
+    {"sets", "Lists all sets in the database. If a date is given, only shows sets which took " \
+        "place on that date. Date format does not require filler zeros.\n"},
+    {"add", "For muscles and exercises, adding them to the database is guided by prompts. For " \
+        "adding sets, weight can be any positive floating point number and reps must be a " \
+        "natural number. Date format does not require filler zeros.\n"},
+    {"delete", "Deletes the chosen item from the database. If an id is given, deletes the set " \
+        "with that id instead.\n"},
+    {"update", "Currenly chosen item is the item to be updated. Updatable fields for exercises " \
+        "are 'name', 'compound', 'primary' and 'secondary'. Updatable fields for muscles are " \
+        "'name', 'group' and 'upper'.\n"},
+    {"back", "Makes it so that there is no longer a chosen item. This is the same state as the " \
+        "one that the program starts in.\n"},
+    {"quit", "Completely stops program execution.\n"}
+};
 
 /**
  * Returns input from the user with leading and trailing spaces removed.
@@ -170,6 +211,8 @@ int main() {
         string current_item = "";
         string input;
 
+        cout << "Welcome to Gym Tracker. Type 'help' to see commands." << endl;
+
         while (true) {
             cout << format("{}>", current_item);
             string input_type;
@@ -311,6 +354,20 @@ int main() {
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 current = nothing;
                 current_item = "";
+            }
+            else if (input_type == "help") {
+                if (iscntrl(cin.peek())) {
+                    cout << help;
+                    continue;
+                }
+                string help_input = read_input();
+                auto help_output = help_table.find(help_input);
+                if (help_output == help_table.end()) {
+                    cout << "'help' must be followed by the first word of a legal command." << endl;
+                }
+                else {
+                    cout << help_output->second;
+                }
             }
             else if (input_type == "quit") {
                 break;
