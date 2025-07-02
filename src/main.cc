@@ -206,7 +206,7 @@ void update_muscles(Data &database, const string &current_item, const char* main
 
 int main() {
     try {
-        Data database = Data("test.db");
+        Data database = Data("gym.db");
         State current = nothing;
         string current_item = "";
         string input;
