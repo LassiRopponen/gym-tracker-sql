@@ -4,12 +4,12 @@ A program for storing and showing exercise data. Uses SQLite for its database.
 
 ### How to run
 
-Needs a C/C++ compiler and Make. The makefile uses GCC by default but this can be changed with the CXX and CC flags.
+Needs a C/C++ compiler and CMake.
 
-Build:
-`make`
+To build the program, in the build directory, run:
 
-Run:
-`build/gym_tracker`
+`cmake ..`
 
-Tested with GCC 14.2.0 and Make 4.4.1.
+`cmake --build .`
+
+Then run the executable called `gym-tracker`. Most likely it will be in the build directory or, if using MSVC, in build/Debug.
