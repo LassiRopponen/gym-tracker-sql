@@ -1,7 +1,5 @@
 .PHONY: all clean help
 
-OS := $(shell uname)
-
 CXX=g++
 CC=gcc
 CXXFLAGS=-std=c++20
@@ -25,9 +23,10 @@ build/sqlite3.o:
 	$(CC) -c sqlite3/sqlite3.c -o $@
 
 clean:
-ifeq ($(OS),Windows)
+ifeq ($(OS),Windows_NT)
 	del /q /f "$(BUILDDIR)\*"
-	for /d %d in ("$(BUILDDIR)\*") do rmdir /q /s "%d"
+	for /d %%d in ("$(BUILDDIR)\*") do rmdir /q /s "%%d"
+	cd . > build/.gitkeep
 else
 	rm -rf $(BUILDDIR)/*
 endif
