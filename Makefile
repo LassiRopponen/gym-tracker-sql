@@ -7,7 +7,7 @@ CXXFLAGS=-std=c++20
 BUILDDIR=build
 SOURCEDIR=src
 INCLUDEDIR=include
-EXEC=gym_tracker
+EXEC=gym-tracker
 SOURCES:=$(wildcard $(SOURCEDIR)/*.cc)
 OBJ:=$(patsubst $(SOURCEDIR)/%.cc,$(BUILDDIR)/%.o,$(SOURCES))
 
